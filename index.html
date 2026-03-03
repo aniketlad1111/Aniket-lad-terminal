@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="description" content="Aniket Lad Intelligence Terminal — Global Commodity, FX, India Markets & News Intelligence">
+<meta name="author" content="Aniket Lad">
+<meta name="theme-color" content="#080b0f">
+<title>ANIKET LAD — Intelligence Terminal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+/* ════════════════════════════════════════════════
+   ANIKET LAD INTELLIGENCE TERMINAL
+   Responsive: Phone · Tablet · Desktop
+   ════════════════════════════════════════════════ */
+:root {
+  --bg-base:#080b0f; --bg-panel:#0d1117; --bg-card:#111820; --bg-hover:#161f2a;
+  --amber:#f5a623; --amber-dim:#c47d0e; --amber-glow:rgba(245,166,35,0.13);
+  --red:#ff3b3b; --red-dim:rgba(255,59,59,0.12);
+  --green:#00e676; --green-dim:#00b359;
+  --blue:#29b6f6; --blue-bg:rgba(41,182,246,0.1);
+  --purple:#c084fc;
+  --saffron:#ff9933; --india-green:#138808;
+  --white:#e8edf2; --muted:#4a5568;
+  --border:rgba(245,166,35,0.1); --border-bright:rgba(245,166,35,0.32);
+  --font-mono:'Share Tech Mono',monospace;
+  --font-head:'Barlow Condensed',sans-serif;
+  --font-body:'Rajdhani',sans-serif;
+  --sidebar-w:265px;
+  --right-w:295px;
+  --bottom-h:210px;
+  --header-h:50px;
+  --ticker-h:30px;
+  --status-h:24px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;background:var(--bg-base);}
+body{color:var(--white);font-family:var(--font-body);font-size:13px;display:flex;flex-direction:column;}
+
+/* ── TICKER ──────────────────────────── */
+#ticker-bar{
+  height:var(--ticker-h);background:#05080b;
+  border-bottom:1px solid var(--border-bright);
+  display:flex;align-items:center;overflow:hidden;flex-shrink:0;z-index:100;
+}
+#ticker-label{
+  font-family:var(--font-mono);font-size:9px;color:var(--amber);
+  background:var(--bg-base);padding:0 12px;height:100%;
+  display:flex;align-items:center;border-right:1px solid var(--border-bright);
+  white-space:nowrap;letter-spacing:2px;flex-shrink:0;
+}
+.ticker-wrap{flex:1;overflow:hidden;}
+.ticker-track{display:flex;animation:tick-scroll 70s linear infinite;width:max-content;}
+.ticker-track:hover{animation-play-state:paused;}
+@keyframes tick-scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.tick-item{display:flex;align-items:center;gap:5px;padding:0 14px;font-family:var(--font-mono);
+  font-size:10.5px;white-space:nowrap;border-right:1px solid rgba(245,166,35,0.07);
+  cursor:pointer;transition:background .15s;}
+.tick-item:hover{background:var(--amber-glow);}
+.t-name{color:var(--muted);font-size:8.5px;letter-spacing:1px;}
+.t-price{color:var(--white);font-weight:bold;}
+.t-chg.up{color:var(--green);}
+.t-chg.dn{color:var(--red);}
+
+/* ── HEADER ──────────────────────────── */
+#header{
+  height:var(--header-h);background:var(--bg-panel);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 14px;gap:12px;flex-shrink:0;z-index:90;
+}
+.logo-block{display:flex;align-items:center;gap:8px;flex-shrink:0;cursor:pointer;}
+.logo-icon{font-size:19px;filter:drop-shadow(0 0 7px var(--amber));}
+.logo-name{font-family:var(--font-head);font-size:17px;font-weight:900;letter-spacing:3px;line-height:1;}
+.logo-name .first{color:var(--amber);}
+.logo-name .last{color:var(--white);}
+.logo-name .suffix{color:var(--amber-dim);font-size:12px;letter-spacing:2px;margin-left:2px;transition:opacity .3s;}
+.tagline-row{height:11px;overflow:hidden;position:relative;}
+.tline{position:absolute;top:0;left:0;font-family:var(--font-mono);font-size:7px;
+  color:var(--muted);letter-spacing:2px;white-space:nowrap;opacity:0;transition:opacity .4s;}
+.tline.on{opacity:1;}
+.variants{display:flex;gap:1px;margin-left:4px;flex-shrink:0;}
+.vbtn{font-family:var(--font-head);font-size:10.5px;font-weight:700;letter-spacing:1px;
+  padding:4px 11px;border:1px solid transparent;background:transparent;
+  color:var(--muted);cursor:pointer;transition:all .2s;text-transform:uppercase;}
+.vbtn:hover{color:var(--amber);border-color:var(--border);}
+.vbtn.active{color:var(--amber);border-color:var(--border-bright);background:var(--amber-glow);}
+.hdr-right{margin-left:auto;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.clock-block{text-align:right;}
+#clock-ist{font-family:var(--font-mono);font-size:11.5px;color:var(--amber);letter-spacing:2px;font-weight:bold;}
+#clock-utc{font-family:var(--font-mono);font-size:8px;color:var(--muted);letter-spacing:1px;}
+.dot-live{width:6px;height:6px;border-radius:50%;background:var(--green);
+  box-shadow:0 0 6px var(--green);animation:pd 1s infinite;}
+@keyframes pd{0%,100%{opacity:1}50%{opacity:.3}}
+.hbtn{font-family:var(--font-mono);font-size:8.5px;padding:4px 9px;
+  border:1px solid var(--border-bright);background:transparent;color:var(--amber);
+  cursor:pointer;letter-spacing:1px;transition:all .2s;white-space:nowrap;}
+.hbtn:hover{background:var(--amber-glow);}
+#menu-btn{display:none;font-size:18px;color:var(--amber);cursor:pointer;padding:4px;background:none;border:none;}
+
+/* ── MAIN LAYOUT ─────────────────────── */
+#main{display:flex;flex:1;overflow:hidden;position:relative;}
+
+/* ── SIDEBARS ────────────────────────── */
+#sidebar-left{
+  width:var(--sidebar-w);background:var(--bg-panel);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;
+  transition:transform .3s ease;
+}
+#sidebar-right{
+  width:var(--right-w);background:var(--bg-panel);
+  border-left:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;
+  transition:transform .3s ease;
+}
+#center-col{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+
+/* ── MAP ─────────────────────────────── */
+#map-area{flex:1;position:relative;overflow:hidden;}
+#map{width:100%;height:100%;}
+
+/* ── BOTTOM PANELS ───────────────────── */
+#bottom-panels{
+  height:var(--bottom-h);display:flex;
+  border-top:1px solid var(--border);flex-shrink:0;overflow:hidden;
+}
+.bp{flex:1;border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+.bp:last-child{border-right:none;}
+
+/* ── PANEL HEADER ────────────────────── */
+.ph{padding:7px 11px;border-bottom:1px solid var(--border);display:flex;
+  align-items:center;justify-content:space-between;flex-shrink:0;background:rgba(0,0,0,0.18);}
+.pt{font-family:var(--font-head);font-size:9.5px;font-weight:700;letter-spacing:3px;
+  color:var(--amber);text-transform:uppercase;}
+.pc{font-family:var(--font-mono);font-size:8.5px;color:var(--muted);
+  background:var(--bg-card);padding:1px 5px;border:1px solid var(--border);}
+.ph-tabs{display:flex;gap:1px;}
+.ph-tab{font-family:var(--font-mono);font-size:7.5px;padding:2px 6px;border:1px solid transparent;
+  background:transparent;color:var(--muted);cursor:pointer;letter-spacing:1px;transition:all .15s;}
+.ph-tab.active{color:var(--amber);border-color:var(--border);background:var(--amber-glow);}
+
+/* ── PRICE CARDS ─────────────────────── */
+.pgrid{padding:7px;display:grid;grid-template-columns:1fr 1fr;gap:4px;overflow-y:auto;}
+.pcard{background:var(--bg-card);border:1px solid var(--border);padding:7px 8px 6px;
+  cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.pcard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--amber);opacity:0;transition:opacity .2s;}
+.pcard:hover,.pcard:active{border-color:var(--border-bright);background:var(--bg-hover);}
+.pcard:hover::before,.pcard:active::before{opacity:1;}
+.pl{font-family:var(--font-mono);font-size:7.5px;color:var(--muted);letter-spacing:1.5px;margin-bottom:2px;}
+.pp{font-family:var(--font-mono);font-size:13px;color:var(--white);font-weight:bold;}
+.pch{font-family:var(--font-mono);font-size:8.5px;margin-top:2px;}
+.pch.up{color:var(--green);}
+.pch.dn{color:var(--red);}
+.pbar{height:2px;background:var(--border);margin-top:4px;border-radius:1px;overflow:hidden;}
+.pbfill{height:100%;border-radius:1px;transition:width .8s ease;}
+
+/* ── TABLES ──────────────────────────── */
+.dtable{width:100%;border-collapse:collapse;font-family:var(--font-mono);font-size:9.5px;}
+.dtable th{color:var(--muted);font-size:7.5px;letter-spacing:1px;padding:3px 7px;
+  border-bottom:1px solid var(--border);text-align:left;background:rgba(0,0,0,0.18);position:sticky;top:0;}
+.dtable td{padding:4px 7px;border-bottom:1px solid rgba(245,166,35,0.04);}
+.dtable tr:hover td{background:var(--bg-hover);cursor:pointer;}
+.dtable .up{color:var(--green);}
+.dtable .dn{color:var(--red);}
+.dtable .amber{color:var(--amber);}
+.dtable .saffron{color:var(--saffron);}
+.signal{font-size:7.5px;padding:1px 5px;border-radius:1px;}
+.signal.BUY{background:rgba(0,230,118,0.12);color:var(--green);border:1px solid rgba(0,230,118,0.25);}
+.signal.SELL{background:var(--red-dim);color:var(--red);border:1px solid rgba(255,59,59,0.25);}
+.signal.HOLD{background:rgba(74,85,104,0.2);color:var(--muted);border:1px solid rgba(74,85,104,0.3);}
+.signal.WATCH{background:var(--amber-glow);color:var(--amber);border:1px solid var(--border-bright);}
+
+/* ── NEWS FEED ───────────────────────── */
+.ni-feed{flex:1;overflow-y:auto;}
+.ni-item{padding:8px 11px;border-bottom:1px solid var(--border);
+  cursor:pointer;transition:background .15s;position:relative;}
+.ni-item:hover,.ni-item:active{background:var(--bg-hover);}
+.ni-sev{font-family:var(--font-mono);font-size:7.5px;letter-spacing:2px;
+  padding:1px 5px;margin-bottom:4px;display:inline-block;}
+.ni-sev.CRITICAL{background:var(--red-dim);color:var(--red);border:1px solid rgba(255,59,59,0.3);}
+.ni-sev.HIGH{background:var(--amber-glow);color:var(--amber);border:1px solid rgba(245,166,35,0.3);}
+.ni-sev.MEDIUM{background:var(--blue-bg);color:var(--blue);border:1px solid rgba(41,182,246,0.25);}
+.ni-sev.LOW{background:rgba(74,85,104,0.12);color:var(--muted);border:1px solid rgba(74,85,104,0.2);}
+.ni-hl{font-family:var(--font-body);font-size:11.5px;font-weight:600;
+  color:var(--white);line-height:1.4;margin-bottom:3px;}
+.ni-impl{font-family:var(--font-mono);font-size:8px;color:var(--green-dim);
+  margin-top:3px;line-height:1.5;display:none;}
+.ni-item:hover .ni-impl,.ni-item.open .ni-impl{display:block;}
+.ni-meta{font-family:var(--font-mono);font-size:8.5px;color:var(--muted);
+  display:flex;gap:7px;flex-wrap:wrap;align-items:center;}
+.ni-com{color:var(--amber);font-size:7.5px;letter-spacing:1px;}
+.imp-chips{display:flex;gap:2px;margin-top:3px;flex-wrap:wrap;}
+.imp-chip{font-family:var(--font-mono);font-size:7px;padding:1px 5px;
+  border:1px solid var(--border);}
+
+/* ── FOCAL POINTS ────────────────────── */
+.fp-item{padding:8px 11px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;}
+.fp-item:hover{background:var(--bg-hover);}
+.fp-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;}
+.fp-title{font-family:var(--font-head);font-size:11.5px;font-weight:700;letter-spacing:1px;color:var(--white);}
+.fp-src{font-family:var(--font-mono);font-size:7.5px;color:var(--amber);
+  background:var(--amber-glow);padding:1px 5px;border:1px solid var(--border-bright);}
+.fp-desc{font-family:var(--font-body);font-size:10.5px;color:var(--muted);line-height:1.45;}
+.fp-tags{display:flex;gap:3px;margin-top:3px;flex-wrap:wrap;}
+.ftag{font-family:var(--font-mono);font-size:7px;padding:1px 5px;letter-spacing:.8px;}
+.ftag.S{background:var(--red-dim);color:var(--red);border:1px solid rgba(255,59,59,.2);}
+.ftag.G{background:var(--amber-glow);color:var(--amber);border:1px solid var(--border-bright);}
+.ftag.I{background:rgba(255,153,51,0.1);color:var(--saffron);border:1px solid rgba(255,153,51,.2);}
+.ftag.M{background:rgba(192,132,252,0.08);color:var(--purple);border:1px solid rgba(192,132,252,.2);}
+
+/* ── LAYERS ──────────────────────────── */
+.lc-wrap{padding:7px;border-bottom:1px solid var(--border);}
+.lc-row{display:flex;align-items:center;justify-content:space-between;
+  padding:4px;cursor:pointer;border-radius:2px;transition:background .15s;}
+.lc-row:hover{background:var(--bg-hover);}
+.lc-lbl{font-family:var(--font-body);font-size:11px;font-weight:600;color:var(--white);
+  display:flex;align-items:center;gap:6px;}
+.toggle{width:26px;height:14px;background:var(--muted);border-radius:7px;
+  position:relative;transition:background .2s;flex-shrink:0;}
+.toggle.on{background:var(--amber);}
+.toggle::after{content:'';position:absolute;width:10px;height:10px;background:var(--bg-base);
+  border-radius:50%;top:2px;left:2px;transition:transform .2s;}
+.toggle.on::after{transform:translateX(12px);}
+
+/* ── REGION BTNS ─────────────────────── */
+.rgn-wrap{padding:7px;display:flex;flex-wrap:wrap;gap:3px;border-bottom:1px solid var(--border);}
+.rbtn{font-family:var(--font-mono);font-size:7.5px;padding:3px 7px;
+  border:1px solid var(--border);background:var(--bg-card);color:var(--muted);
+  cursor:pointer;letter-spacing:.8px;transition:all .2s;}
+.rbtn:hover,.rbtn.active{color:var(--amber);border-color:var(--border-bright);background:var(--amber-glow);}
+
+/* ── MAP CONTROLS ────────────────────── */
+#map-btns{position:absolute;top:10px;left:10px;z-index:400;display:flex;flex-direction:column;gap:4px;}
+.mbtn{font-family:var(--font-mono);font-size:8px;padding:5px 9px;
+  background:rgba(8,11,15,.92);border:1px solid var(--border-bright);
+  color:var(--amber);cursor:pointer;letter-spacing:1px;transition:all .2s;backdrop-filter:blur(6px);}
+.mbtn:hover,.mbtn:active{background:var(--amber-glow);}
+#ref-badge{position:absolute;top:10px;right:10px;z-index:400;
+  font-family:var(--font-mono);font-size:8px;padding:4px 9px;
+  background:rgba(8,11,15,.92);border:1px solid var(--border-bright);
+  color:var(--green);letter-spacing:1px;backdrop-filter:blur(6px);}
+
+/* ── WORLDMONITOR OVERLAY ────────────── */
+#wm-overlay{display:none;position:absolute;inset:0;z-index:500;background:var(--bg-base);flex-direction:column;}
+#wm-overlay.open{display:flex;}
+#wm-bar{height:34px;background:var(--bg-panel);border-bottom:1px solid var(--border-bright);
+  display:flex;align-items:center;padding:0 12px;gap:8px;flex-shrink:0;}
+#wm-title{font-family:var(--font-mono);font-size:9.5px;color:var(--purple);letter-spacing:2px;}
+#wm-close{font-family:var(--font-mono);font-size:8.5px;padding:3px 9px;
+  border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;margin-left:auto;transition:all .2s;}
+#wm-close:hover{color:var(--white);border-color:var(--white);}
+#wm-frame{flex:1;border:none;background:#000;}
+
+/* ── ALERTS ──────────────────────────── */
+#alert-panel{position:fixed;bottom:30px;right:12px;width:320px;z-index:9000;
+  display:flex;flex-direction:column;gap:6px;pointer-events:none;}
+.toast{background:var(--bg-panel);border:1px solid var(--border-bright);
+  border-left:3px solid var(--amber);padding:9px 11px;font-family:var(--font-mono);
+  font-size:9.5px;color:var(--white);animation:sl-in .3s ease;
+  pointer-events:all;cursor:pointer;line-height:1.6;
+  box-shadow:0 4px 18px rgba(0,0,0,.5);}
+.toast.crit{border-left-color:var(--red);}
+.toast.wth{border-left-color:var(--blue);}
+.toast.india{border-left-color:var(--saffron);}
+.toast.wm{border-left-color:var(--purple);}
+@keyframes sl-in{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes sl-out{from{opacity:1}to{opacity:0;transform:translateX(30px)}}
+.toast.fading{animation:sl-out .35s ease forwards;}
+.t-type{font-size:7.5px;letter-spacing:2px;margin-bottom:2px;color:var(--amber);}
+.toast.crit .t-type{color:var(--red);}
+.toast.wth .t-type{color:var(--blue);}
+.toast.india .t-type{color:var(--saffron);}
+.toast.wm .t-type{color:var(--purple);}
+
+/* ── CHART MODAL ─────────────────────── */
+#chart-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);
+  z-index:8000;align-items:center;justify-content:center;backdrop-filter:blur(4px);padding:12px;}
+#chart-modal.open{display:flex;}
+.cm-box{background:var(--bg-panel);border:1px solid var(--border-bright);
+  width:100%;max-width:500px;padding:16px;}
+.cm-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;}
+.cm-title{font-family:var(--font-head);font-size:16px;font-weight:700;color:var(--amber);letter-spacing:2px;}
+.cm-price{font-family:var(--font-mono);font-size:12px;color:var(--white);}
+.cm-close{font-family:var(--font-mono);font-size:8.5px;color:var(--muted);
+  cursor:pointer;padding:3px 8px;border:1px solid var(--border);background:transparent;
+  transition:all .2s;flex-shrink:0;}
+.cm-close:hover{color:var(--white);border-color:var(--white);}
+.cm-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:10px;}
+.cm-stat{background:var(--bg-card);padding:6px 8px;border:1px solid var(--border);}
+.cs-lbl{font-family:var(--font-mono);font-size:7px;color:var(--muted);letter-spacing:1px;margin-bottom:2px;}
+.cs-val{font-family:var(--font-mono);font-size:10.5px;color:var(--white);}
+.cs-val.up{color:var(--green);}
+.cs-val.dn{color:var(--red);}
+
+/* ── MOBILE DRAWER OVERLAY ───────────── */
+#drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:800;}
+#drawer-overlay.open{display:block;}
+
+/* ── STATUS BAR ──────────────────────── */
+#status-bar{height:var(--status-h);background:#05080b;border-top:1px solid var(--border);
+  display:flex;align-items:center;padding:0 10px;gap:12px;
+  font-family:var(--font-mono);font-size:8px;color:var(--muted);flex-shrink:0;letter-spacing:.7px;
+  overflow:hidden;}
+.sb-i{display:flex;align-items:center;gap:3px;white-space:nowrap;}
+.sb-v{color:var(--amber);}
+.sb-sep{color:rgba(245,166,35,0.15);}
+
+/* ── SCAN LINES ──────────────────────── */
+body::after{content:'';position:fixed;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.016) 2px,rgba(0,0,0,0.016) 4px);
+  pointer-events:none;z-index:9999;}
+
+/* ── SCROLLBARS ──────────────────────── */
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:var(--bg-base);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+::-webkit-scrollbar-thumb:hover{background:var(--amber-dim);}
+
+/* ── LEAFLET ─────────────────────────── */
+.leaflet-container{background:#070b10!important;}
+.leaflet-control-zoom{border:1px solid var(--border-bright)!important;background:rgba(8,11,15,.92)!important;}
+.leaflet-control-zoom a{background:transparent!important;color:var(--amber)!important;border-color:var(--border)!important;font-family:var(--font-mono)!important;}
+.leaflet-control-zoom a:hover{background:var(--amber-glow)!important;}
+.leaflet-popup-content-wrapper{background:var(--bg-panel)!important;color:var(--white)!important;border:1px solid var(--border-bright)!important;border-radius:0!important;font-family:var(--font-body)!important;box-shadow:0 4px 22px rgba(0,0,0,.6)!important;}
+.leaflet-popup-tip{background:var(--bg-panel)!important;}
+.leaflet-popup-close-button{color:var(--amber)!important;}
+
+/* ── LOADING ─────────────────────────── */
+#loading{position:fixed;inset:0;background:var(--bg-base);z-index:99999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;transition:opacity .5s;}
+#loading.hidden{opacity:0;pointer-events:none;}
+.ld-logo{font-family:var(--font-head);font-size:34px;font-weight:900;color:var(--amber);
+  letter-spacing:6px;filter:drop-shadow(0 0 16px var(--amber));text-align:center;}
+.ld-suf{font-family:var(--font-head);font-size:13px;font-weight:600;
+  color:var(--amber-dim);letter-spacing:5px;margin-top:-6px;}
+.ld-sub{font-family:var(--font-mono);font-size:9px;color:var(--muted);letter-spacing:3px;}
+.ld-bar-w{width:260px;height:2px;background:var(--border);overflow:hidden;}
+.ld-bar{height:100%;background:var(--amber);width:0%;animation:ldp 2s ease forwards;box-shadow:0 0 9px var(--amber);}
+@keyframes ldp{0%{width:0}30%{width:28%}65%{width:62%}90%{width:87%}100%{width:100%}}
+.ld-status{font-family:var(--font-mono);font-size:8.5px;color:var(--muted);letter-spacing:2px;animation:blink 1s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.ld-mods{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;}
+.ld-mod{font-family:var(--font-mono);font-size:7.5px;padding:2px 9px;border:1px solid var(--border);color:var(--muted);letter-spacing:1px;}
+.ld-mod.ok{color:var(--green);border-color:rgba(0,230,118,.3);}
+.ld-private{font-family:var(--font-mono);font-size:7px;color:rgba(245,166,35,0.22);letter-spacing:3px;margin-top:4px;}
+
+/* ══════════════════════════════════════
+   RESPONSIVE — TABLET (≤900px)
+   ══════════════════════════════════════ */
+@media(max-width:900px){
+  :root{--sidebar-w:240px;--right-w:240px;--bottom-h:190px;}
+  #sidebar-right{display:none;}
+  .logo-name .suffix{display:none;}
+  .vbtn{padding:3px 8px;font-size:9.5px;}
+  .hbtn{display:none;}
+  #menu-btn{display:block;}
+  #bottom-panels{height:var(--bottom-h);}
+  .bp:nth-child(4),.bp:nth-child(5){display:none;}
+  #alert-panel{width:280px;}
+}
+
+/* ══════════════════════════════════════
+   RESPONSIVE — PHONE (≤600px)
+   ══════════════════════════════════════ */
+@media(max-width:600px){
+  :root{
+    --ticker-h:28px; --header-h:52px;
+    --bottom-h:0px; --status-h:22px;
+  }
+  body{font-size:12px;}
+
+  /* Stack layout */
+  #main{flex-direction:column;}
+  #sidebar-left{
+    position:fixed;top:0;left:0;bottom:0;
+    width:260px;z-index:850;
+    transform:translateX(-100%);
+    border-right:1px solid var(--border-bright);
+    padding-top:calc(var(--ticker-h) + var(--header-h));
+    background:var(--bg-panel);
+  }
+  #sidebar-left.open{transform:translateX(0);}
+  #sidebar-right{
+    position:fixed;top:0;right:0;bottom:0;
+    width:270px;z-index:850;
+    transform:translateX(100%);
+    border-left:1px solid var(--border-bright);
+    padding-top:calc(var(--ticker-h) + var(--header-h));
+  }
+  #sidebar-right.open{transform:translateX(0);}
+  #center-col{flex:1;height:100%;}
+  #map-area{flex:1;}
+  #bottom-panels{display:none;}
+
+  /* Header phone layout */
+  #header{height:52px;padding:0 10px;gap:8px;}
+  .logo-name{font-size:14px;letter-spacing:2px;}
+  .logo-name .suffix{display:none;}
+  .tagline-row{display:none;}
+  .variants{display:none;}
+  .logo-icon{font-size:16px;}
+  #menu-btn{display:block;}
+  .hbtn{display:none;}
+  .clock-block #clock-utc{display:none;}
+
+  /* Ticker phone */
+  #ticker-label{font-size:7px;padding:0 8px;letter-spacing:1px;}
+  .tick-item{padding:0 10px;font-size:10px;}
+
+  /* Phone bottom nav */
+  #phone-nav{display:flex;}
+
+  /* Map controls */
+  #map-btns{flex-direction:row;flex-wrap:wrap;gap:3px;top:8px;left:8px;right:50px;}
+  .mbtn{font-size:7.5px;padding:4px 7px;}
+  #ref-badge{top:8px;right:8px;font-size:7.5px;padding:3px 7px;}
+
+  /* Alerts phone */
+  #alert-panel{width:calc(100vw - 24px);right:12px;bottom:50px;}
+
+  /* Status bar phone */
+  #status-bar .sb-i:nth-child(n+9){display:none;}
+}
+
+/* ── PHONE BOTTOM NAV ────────────────── */
+#phone-nav{
+  display:none;height:48px;background:var(--bg-panel);
+  border-top:1px solid var(--border-bright);
+  flex-shrink:0;justify-content:space-around;align-items:center;z-index:200;
+}
+.pnav-btn{
+  font-family:var(--font-mono);font-size:8px;color:var(--muted);
+  cursor:pointer;padding:6px 10px;border:none;background:transparent;
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  letter-spacing:1px;transition:color .2s;
+}
+.pnav-btn .pn-icon{font-size:16px;}
+.pnav-btn.active{color:var(--amber);}
+.pnav-btn:hover{color:var(--amber);}
+
+/* ── INDIA PANEL STYLE ───────────────── */
+.india-ph{background:linear-gradient(90deg,rgba(255,153,51,.07),rgba(19,136,8,.05));}
+
+/* ── OWNER BADGE ─────────────────────── */
+.owner-badge{font-family:var(--font-mono);font-size:7px;padding:2px 7px;
+  border:1px solid rgba(245,166,35,0.2);background:rgba(245,166,35,0.04);
+  color:var(--amber-dim);letter-spacing:1.5px;white-space:nowrap;}
+
+/* ── WATERMARK ───────────────────────── */
+#watermark{
+  position:fixed;bottom:var(--status-h);left:50%;transform:translateX(-50%);
+  font-family:var(--font-mono);font-size:7.5px;color:rgba(245,166,35,0.1);
+  letter-spacing:3px;pointer-events:none;z-index:9998;white-space:nowrap;
+}
+
+/* ── PULSE ANIMATION ─────────────────── */
+@keyframes ring-pulse{0%{transform:scale(1);opacity:.9}100%{transform:scale(2.3);opacity:0}}
+
+/* ── REPO CREDIT TAG ─────────────────── */
+.repo-tag{
+  font-family:var(--font-mono);font-size:7px;padding:2px 8px;
+  border:1px solid rgba(192,132,252,0.25);background:rgba(192,132,252,0.06);
+  color:var(--purple);letter-spacing:1.2px;white-space:nowrap;cursor:pointer;
+  transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:4px;
+}
+.repo-tag:hover{background:rgba(192,132,252,0.15);border-color:rgba(192,132,252,0.4);}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading">
+  <div class="ld-logo">⚡ ANIKET LAD</div>
+  <div class="ld-suf" id="ld-suf">INTELLIGENCE TERMINAL</div>
+  <div class="ld-sub">GLOBAL COMMODITY · FX · INDIA · NEWS</div>
+  <div class="ld-bar-w"><div class="ld-bar"></div></div>
+  <div class="ld-status" id="ld-status">INITIALIZING...</div>
+  <div class="ld-mods">
+    <div class="ld-mod" id="lm-px">PRICES</div>
+    <div class="ld-mod" id="lm-in">INDIA</div>
+    <div class="ld-mod" id="lm-fx">FX</div>
+    <div class="ld-mod" id="lm-mp">MAP</div>
+    <div class="ld-mod" id="lm-wm">WORLDMONITOR</div>
+    <div class="ld-mod" id="lm-ai">AI/OLLAMA</div>
+  </div>
+  <div class="ld-private">PRIVATE — ANIKET LAD — DO NOT DISTRIBUTE</div>
+</div>
+
+<!-- TICKER -->
+<div id="ticker-bar">
+  <div id="ticker-label">◈ LIVE</div>
+  <div class="ticker-wrap"><div class="ticker-track" id="ticker-track"></div></div>
+</div>
+
+<!-- HEADER -->
+<div id="header">
+  <button id="menu-btn" onclick="toggleMenu()">☰</button>
+  <div class="logo-block" onclick="flyTo(20,0,2)">
+    <span class="logo-icon">⚡</span>
+    <div>
+      <div class="logo-name">
+        <span class="first">ANIKET </span><span class="last">LAD</span><span class="suffix" id="logo-sfx">INTELLIGENCE</span>
+      </div>
+      <div class="tagline-row">
+        <span class="tline on" id="tl0">GLOBAL COMMODITY &amp; MARKET INTELLIGENCE</span>
+        <span class="tline" id="tl1">PERSONAL TRADING INTELLIGENCE TERMINAL</span>
+        <span class="tline" id="tl2">PRIVATE MARKET INTELLIGENCE SYSTEM</span>
+        <span class="tline" id="tl3">COMMODITY &amp; FX RESEARCH DESK</span>
+      </div>
+    </div>
+  </div>
+  <div class="variants">
+    <button class="vbtn active" onclick="setVariant('ENERGY',this)">🛢️ ENERGY</button>
+    <button class="vbtn" onclick="setVariant('METALS',this)">🥇 METALS</button>
+    <button class="vbtn" onclick="setVariant('POWER',this)">⚡ POWER</button>
+    <button class="vbtn" onclick="setVariant('FX',this)">💱 FX</button>
+    <button class="vbtn" onclick="setVariant('INDIA',this)">🇮🇳 INDIA</button>
+  </div>
+  <div class="hdr-right">
+    <div class="owner-badge">◈ ANIKET LAD — PRIVATE</div>
+    <a class="repo-tag" href="https://github.com/aniketlad1111/aniket-lad-terminal" target="_blank">
+      ⎇ GitHub
+    </a>
+    <a class="repo-tag" href="https://github.com/koala73/worldmonitor" target="_blank" style="border-color:rgba(245,166,35,0.25);color:var(--amber-dim);">
+      ⎇ WorldMonitor
+    </a>
+    <div class="dot-live" id="live-dot"></div>
+    <div class="clock-block">
+      <div id="clock-ist">--:--:-- IST</div>
+      <div id="clock-utc">-- UTC</div>
+    </div>
+    <button class="hbtn" onclick="openWM()">🌍 WORLD INTEL</button>
+    <button class="hbtn" onclick="testAlert()">🔔 ALERT</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+  <!-- LEFT SIDEBAR -->
+  <div id="sidebar-left">
+    <div class="ph">
+      <span class="pt">📊 PRICES</span>
+      <div class="ph-tabs">
+        <button class="ph-tab active" onclick="setPTab('ENERGY',this)">NRG</button>
+        <button class="ph-tab" onclick="setPTab('METALS',this)">MTL</button>
+        <button class="ph-tab" onclick="setPTab('FX',this)">FX</button>
+      </div>
+    </div>
+    <div class="pgrid" id="price-grid"></div>
+
+    <div class="ph"><span class="pt">🗺️ LAYERS</span></div>
+    <div class="lc-wrap" id="layer-ctrl"></div>
+
+    <div class="ph"><span class="pt">📍 REGIONS</span></div>
+    <div class="rgn-wrap" id="rgn-btns"></div>
+
+    <div class="ph">
+      <span class="pt">⚡ FOCAL</span>
+      <span class="pc" id="fp-cnt">0</span>
+    </div>
+    <div style="overflow-y:auto;flex:1;" id="fp-list"></div>
+  </div>
+
+  <!-- CENTER -->
+  <div id="center-col">
+    <div id="map-area">
+      <div id="map"></div>
+      <div id="map-btns">
+        <button class="mbtn" onclick="flyTo(20,0,2)">🌐</button>
+        <button class="mbtn" onclick="flyTo(26.56,56.25,5)">🛢 HORMUZ</button>
+        <button class="mbtn" onclick="flyTo(1.26,103.82,6)">🌊 MALACCA</button>
+        <button class="mbtn" onclick="flyTo(30.68,32.35,6)">⛵ SUEZ</button>
+        <button class="mbtn" onclick="flyTo(20.5,78.9,4)">🇮🇳 INDIA</button>
+      </div>
+      <div id="ref-badge">⟳ LIVE · 1s</div>
+      <!-- WM OVERLAY -->
+      <div id="wm-overlay">
+        <div id="wm-bar">
+          <span style="font-size:14px;">🌍</span>
+          <span id="wm-title">◈ ANIKET LAD — WORLDMONITOR GLOBAL INTELLIGENCE</span>
+          <span style="font-family:var(--font-mono);font-size:7.5px;color:var(--muted);margin-left:8px;">worldmonitor.app — Live OSINT</span>
+          <a class="repo-tag" href="https://github.com/koala73/worldmonitor" target="_blank" style="margin-left:8px;">⎇ SOURCE</a>
+          <button id="wm-close" onclick="closeWM()">✕ BACK TO MAP</button>
+        </div>
+        <iframe id="wm-frame" src="" allow="clipboard-read;clipboard-write" title="WorldMonitor"></iframe>
+      </div>
+    </div>
+
+    <!-- BOTTOM PANELS -->
+    <div id="bottom-panels">
+      <div class="bp">
+        <div class="ph" style="background:linear-gradient(90deg,rgba(255,215,0,.06),transparent);">
+          <span class="pt" style="color:#ffd700;">🥇 GOLD & SILVER</span>
+          <span class="pc">MCX · COMEX</span>
+        </div>
+        <div style="overflow-y:auto;flex:1;" id="gold-panel"></div>
+      </div>
+      <div class="bp">
+        <div class="ph"><span class="pt">🛢️ OIL MARKETS</span></div>
+        <div style="overflow-y:auto;flex:1;" id="oil-panel"></div>
+      </div>
+      <div class="bp">
+        <div class="ph india-ph">
+          <span class="pt" style="color:var(--saffron);">🇮🇳 INDIA</span>
+          <span class="pc" style="color:var(--saffron);border-color:rgba(255,153,51,.3);">NSE·BSE·MCX</span>
+        </div>
+        <div style="overflow-y:auto;flex:1;" id="india-panel"></div>
+      </div>
+      <div class="bp">
+        <div class="ph"><span class="pt">💱 FX PAIRS</span></div>
+        <div style="overflow-y:auto;flex:1;" id="fx-panel"></div>
+      </div>
+      <div class="bp">
+        <div class="ph"><span class="pt">📰 NEWS IMPACT</span><span class="pc" id="ni-cnt">0</span></div>
+        <div style="overflow-y:auto;flex:1;" id="ni-panel"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT SIDEBAR -->
+  <div id="sidebar-right">
+    <div class="ph">
+      <span class="pt">📡 INTELLIGENCE</span>
+      <span class="pc" id="news-cnt">0</span>
+    </div>
+    <div class="ni-feed" id="news-feed"></div>
+  </div>
+</div>
+
+<!-- PHONE BOTTOM NAV -->
+<div id="phone-nav">
+  <button class="pnav-btn active" onclick="phoneNav('map',this)"><span class="pn-icon">🗺️</span>MAP</button>
+  <button class="pnav-btn" onclick="phoneNav('left',this)"><span class="pn-icon">📊</span>PRICES</button>
+  <button class="pnav-btn" onclick="phoneNav('right',this)"><span class="pn-icon">📡</span>NEWS</button>
+  <button class="pnav-btn" onclick="openWM()"><span class="pn-icon">🌍</span>WORLD</button>
+  <button class="pnav-btn" onclick="testAlert()"><span class="pn-icon">🔔</span>ALERT</button>
+</div>
+
+<!-- STATUS BAR -->
+<div id="status-bar">
+  <div class="sb-i">IST <span class="sb-v" id="sb-ist">--:--</span></div>
+  <div class="sb-sep">|</div>
+  <div class="sb-i">🇮🇳 NIFTY <span class="sb-v" id="sb-nifty">--</span></div>
+  <div class="sb-sep">|</div>
+  <div class="sb-i">🥇 MCX GOLD <span class="sb-v" id="sb-gold">--</span></div>
+  <div class="sb-sep">|</div>
+  <div class="sb-i">🛢 WTI <span class="sb-v" id="sb-wti">--</span></div>
+  <div class="sb-sep">|</div>
+  <div class="sb-i">💱 USD/INR <span class="sb-v" id="sb-usdinr">--</span></div>
+  <div class="sb-sep">|</div>
+  <div class="sb-i">VESSELS <span class="sb-v" id="sb-vsls">10</span></div>
+  <div class="sb-sep">|</div>
+  <div class="sb-i">ALERTS <span class="sb-v" id="sb-alrt">0</span></div>
+  <div class="sb-sep">|</div>
+  <div class="sb-i">WM <span style="color:var(--purple);">LINKED</span></div>
+  <div class="sb-sep">|</div>
+  <div class="sb-i">AI <span class="sb-v">OLLAMA:LOCAL</span></div>
+  <div style="margin-left:auto;" class="sb-i">⚡ ANIKET LAD TERMINAL v2.1</div>
+</div>
+
+<!-- DRAWER OVERLAY (mobile) -->
+<div id="drawer-overlay" onclick="closeSidebars()"></div>
+
+<!-- ALERTS -->
+<div id="alert-panel"></div>
+
+<!-- CHART MODAL -->
+<div id="chart-modal" onclick="if(event.target===this)closeModal()">
+  <div class="cm-box">
+    <div class="cm-hdr">
+      <div>
+        <div class="cm-title" id="cm-title">GOLD</div>
+        <div class="cm-price" id="cm-price">--</div>
+      </div>
+      <button class="cm-close" onclick="closeModal()">✕ CLOSE</button>
+    </div>
+    <canvas id="spark-cv" height="150"></canvas>
+    <div class="cm-stats" id="cm-stats"></div>
+  </div>
+</div>
+
+<!-- WATERMARK -->
+<div id="watermark">⚡ ANIKET LAD INTELLIGENCE TERMINAL — PRIVATE BUILD — github.com/aniketlad1111</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   ANIKET LAD INTELLIGENCE TERMINAL v2.1
+   ▸ Fully responsive: Phone · Tablet · Desktop
+   ▸ 1-second live refresh cycle
+   ▸ India Standard Time (IST = UTC+5:30)
+   ▸ WorldMonitor + koala73/worldmonitor integrated
+   ▸ GitHub: github.com/aniketlad1111/aniket-lad-terminal
+   ════════════════════════════════════════════════════════════ */
+
+const CFG = {
+  OLLAMA:'http://localhost:11434', MODEL:'llama3.2',
+  WM_URL:'https://worldmonitor.app',
+  GH_REPO:'https://github.com/aniketlad1111/aniket-lad-terminal',
+  WM_SOURCE:'https://github.com/koala73/worldmonitor',
+};
+
+const S = {
+  variant:'ENERGY', priceTab:'ENERGY',
+  alertCount:0, refreshSec:1, tick:0,
+  layers:{vessels:true,pipelines:true,refineries:true,weather:true,conflicts:true,india:true},
+  phone:false, leftOpen:false, rightOpen:false,
+};
+
+// ── MASTER PRICE DATA ──────────────────────────────────────
+const PD = {
+  ENERGY:[
+    {id:'WTI',   lab:'WTI CRUDE',   px:78.42,  ch:+1.23,  sig:'WATCH'},
+    {id:'BRENT', lab:'BRENT CRUDE', px:82.15,  ch:+0.87,  sig:'WATCH'},
+    {id:'NG',    lab:'NAT GAS HH',  px:2.18,   ch:-0.11,  sig:'SELL'},
+    {id:'LNG',   lab:'LNG JKM',     px:11.40,  ch:+0.35,  sig:'BUY'},
+    {id:'HEAT',  lab:'HEATING OIL', px:2.94,   ch:-0.03,  sig:'HOLD'},
+    {id:'RBOB',  lab:'RBOB GAS',    px:2.31,   ch:+0.04,  sig:'HOLD'},
+  ],
+  METALS:[
+    {id:'XAU',  lab:'GOLD SPOT',   px:2318.40,ch:+12.50, sig:'BUY'},
+    {id:'XAG',  lab:'SILVER SPOT', px:29.82,  ch:+0.34,  sig:'BUY'},
+    {id:'XCU',  lab:'COPPER',      px:4.48,   ch:-0.07,  sig:'WATCH'},
+    {id:'XPT',  lab:'PLATINUM',    px:982.00, ch:+8.00,  sig:'HOLD'},
+    {id:'XPD',  lab:'PALLADIUM',   px:968.00, ch:-12.00, sig:'SELL'},
+    {id:'IRON', lab:'IRON ORE',    px:103.50, ch:-1.20,  sig:'SELL'},
+  ],
+  POWER:[
+    {id:'COAL', lab:'COAL API2',   px:112.50, ch:-2.10,  sig:'SELL'},
+    {id:'TTF',  lab:'EU TTF GAS',  px:35.20,  ch:-1.40,  sig:'SELL'},
+    {id:'EUA',  lab:'EU CARBON',   px:63.40,  ch:+0.80,  sig:'BUY'},
+    {id:'UKNG', lab:'UK NBP GAS',  px:82.20,  ch:-3.10,  sig:'SELL'},
+    {id:'DEPO', lab:'DE POWER',    px:87.50,  ch:+2.30,  sig:'HOLD'},
+    {id:'ALUM', lab:'ALUMINIUM',   px:2410,   ch:+15.00, sig:'HOLD'},
+  ],
+  FX:[
+    {id:'USDINR',lab:'USD/INR',    px:83.47,  ch:-0.12,  sig:'WATCH'},
+    {id:'EURUSD',lab:'EUR/USD',    px:1.0842, ch:+0.0032,sig:'HOLD'},
+    {id:'USDJPY',lab:'USD/JPY',    px:149.82, ch:+0.45,  sig:'WATCH'},
+    {id:'GBPUSD',lab:'GBP/USD',    px:1.2672, ch:-0.0051,sig:'HOLD'},
+    {id:'USDCAD',lab:'USD/CAD',    px:1.3612, ch:+0.002, sig:'HOLD'},
+    {id:'USDCNH',lab:'USD/CNH',    px:7.2435, ch:-0.008, sig:'WATCH'},
+  ],
+  INDIA:[
+    {id:'NIFTY', lab:'NIFTY 50',   px:22485.4,ch:+123.5, sig:'WATCH'},
+    {id:'SENSEX',lab:'SENSEX',     px:74108.2,ch:+341.8, sig:'WATCH'},
+    {id:'NBANK', lab:'NIFTY BANK', px:48234.1,ch:-89.2,  sig:'HOLD'},
+    {id:'GOLDMCX',lab:'GOLD MCX',  px:71420,  ch:+280,   sig:'BUY'},
+    {id:'CRUDMCX',lab:'CRUDE MCX', px:6542,   ch:+78,    sig:'WATCH'},
+    {id:'USDINR',lab:'USD/INR',    px:83.47,  ch:-0.12,  sig:'WATCH'},
+  ],
+};
+
+const GOLD_DATA=[
+  {sym:'GOLD MCX',  px:71420,  u:'₹/10g', ch:+280,  chp:'+0.39%',sig:'BUY', ex:'MCX'},
+  {sym:'GOLD COMEX',px:2318.4, u:'$/oz',  ch:+12.5, chp:'+0.54%',sig:'BUY', ex:'COMEX'},
+  {sym:'GOLD SPOT', px:2316.8, u:'$/oz',  ch:+11.2, chp:'+0.49%',sig:'BUY', ex:'SPOT'},
+  {sym:'SILVER MCX',px:96850,  u:'₹/kg',  ch:+340,  chp:'+0.35%',sig:'HOLD',ex:'MCX'},
+  {sym:'SILVER SPOT',px:29.82, u:'$/oz',  ch:+0.34, chp:'+1.15%',sig:'BUY', ex:'SPOT'},
+  {sym:'XAU/USD',   px:2318.4, u:'',      ch:+12.5, chp:'+0.54%',sig:'BUY', ex:'FX'},
+  {sym:'XAG/USD',   px:29.82,  u:'',      ch:+0.34, chp:'+1.15%',sig:'BUY', ex:'FX'},
+  {sym:'XAU/INR',   px:193642, u:'₹/oz',  ch:+985,  chp:'+0.51%',sig:'BUY', ex:'CROSS'},
+];
+
+const OIL_DATA=[
+  {sym:'WTI CRUDE',  px:78.42, u:'$/bbl',   ch:+1.23,chp:'+1.59%',sup:'TIGHT'},
+  {sym:'BRENT',      px:82.15, u:'$/bbl',   ch:+0.87,chp:'+1.07%',sup:'BALANCED'},
+  {sym:'OPEC BASKET',px:80.40, u:'$/bbl',   ch:+0.65,chp:'+0.81%',sup:'BALANCED'},
+  {sym:'DUBAI CRUDE',px:79.88, u:'$/bbl',   ch:+0.72,chp:'+0.91%',sup:'TIGHT'},
+  {sym:'URALS',      px:68.20, u:'$/bbl',   ch:+0.45,chp:'+0.66%',sup:'SURPLUS'},
+  {sym:'CRUDE MCX',  px:6542,  u:'₹/bbl',   ch:+78,  chp:'+1.21%',sup:'TIGHT'},
+  {sym:'NAT GAS MCX',px:198.5, u:'₹/mmBtu', ch:-3.2, chp:'-1.59%',sup:'SURPLUS'},
+  {sym:'NAT GAS HH', px:2.18,  u:'$/mmbtu', ch:-0.11,chp:'-4.80%',sup:'SURPLUS'},
+];
+
+const INDIA_DATA=[
+  {sym:'NIFTY 50',   px:22485.40,ch:+123.50,chp:'+0.55%',vol:'12.4B',ex:'NSE'},
+  {sym:'BSE SENSEX', px:74108.20,ch:+341.80,chp:'+0.46%',vol:'8.2B', ex:'BSE'},
+  {sym:'NIFTY BANK', px:48234.10,ch:-89.20, chp:'-0.18%',vol:'5.1B', ex:'NSE'},
+  {sym:'NIFTY IT',   px:36540.30,ch:+280.60,chp:'+0.77%',vol:'2.8B', ex:'NSE'},
+  {sym:'NIFTY METAL',px:9124.80, ch:+142.30,chp:'+1.58%',vol:'1.2B', ex:'NSE'},
+  {sym:'NIFTY ENRGY',px:44218.60,ch:+389.40,chp:'+0.89%',vol:'980M', ex:'NSE'},
+  {sym:'GOLD MCX',   px:71420,   ch:+280,   chp:'+0.39%',vol:'44K',  ex:'MCX'},
+  {sym:'SILVER MCX', px:96850,   ch:+340,   chp:'+0.35%',vol:'22K',  ex:'MCX'},
+  {sym:'CRUDE MCX',  px:6542,    ch:+78,    chp:'+1.21%',vol:'89K',  ex:'MCX'},
+  {sym:'USD/INR',    px:83.47,   ch:-0.12,  chp:'-0.14%',vol:'3.2B', ex:'FOREX'},
+  {sym:'INDIA VIX',  px:14.32,   ch:-0.88,  chp:'-5.79%',vol:'--',   ex:'NSE'},
+  {sym:'RBI REPO',   px:6.50,    ch:0,      chp:'0.00%', vol:'--',   ex:'RBI'},
+];
+
+const FX_DATA=[
+  {pair:'EUR/USD',rate:1.0842,ch:+0.0032,chp:'+0.30%',hi:1.0875,lo:1.0801,cat:'MAJOR'},
+  {pair:'GBP/USD',rate:1.2672,ch:-0.0051,chp:'-0.40%',hi:1.2730,lo:1.2640,cat:'MAJOR'},
+  {pair:'USD/JPY',rate:149.82,ch:+0.45,  chp:'+0.30%',hi:150.40,lo:149.20,cat:'MAJOR'},
+  {pair:'USD/CHF',rate:0.9012,ch:-0.0021,chp:'-0.23%',hi:0.9045,lo:0.8990,cat:'MAJOR'},
+  {pair:'USD/CAD',rate:1.3612,ch:+0.0020,chp:'+0.15%',hi:1.3640,lo:1.3580,cat:'MAJOR'},
+  {pair:'AUD/USD',rate:0.6541,ch:+0.0018,chp:'+0.28%',hi:0.6570,lo:0.6510,cat:'MAJOR'},
+  {pair:'USD/INR',rate:83.47, ch:-0.12,  chp:'-0.14%',hi:83.62, lo:83.32, cat:'INDIA'},
+  {pair:'EUR/INR',rate:90.43, ch:+0.21,  chp:'+0.23%',hi:90.75, lo:90.10, cat:'INDIA'},
+  {pair:'GBP/INR',rate:105.72,ch:-0.18,  chp:'-0.17%',hi:106.10,lo:105.40,cat:'INDIA'},
+  {pair:'JPY/INR',rate:0.5572,ch:-0.003, chp:'-0.54%',hi:0.5610,lo:0.5540,cat:'INDIA'},
+  {pair:'USD/RUB',rate:90.15, ch:+0.32,  chp:'+0.36%',hi:90.80, lo:89.80, cat:'CMDTY'},
+  {pair:'USD/SAR',rate:3.7501,ch:0,      chp:'0.00%', hi:3.7502,lo:3.7498,cat:'CMDTY'},
+  {pair:'USD/CNH',rate:7.2435,ch:-0.008, chp:'-0.11%',hi:7.2550,lo:7.2380,cat:'CMDTY'},
+  {pair:'USD/BRL',rate:4.982, ch:+0.024, chp:'+0.48%',hi:5.0100,lo:4.9600,cat:'EM'},
+  {pair:'USD/AED',rate:3.6725,ch:0,      chp:'0.00%', hi:3.6727,lo:3.6723,cat:'CMDTY'},
+];
+
+const NEWS=[
+  {sev:'CRITICAL',hl:'Iran threatens Hormuz closure; tanker traffic surges to Cape route amid Gulf tensions',src:'Reuters',t:'2m',com:'CRUDE_OIL',chk:'HORMUZ',impl:'WTI/Brent spike $5-8/bbl risk; USD/INR may weaken on India import cost surge',impacts:{OIL:92,GOLD:45,FX:68,INDIA:75}},
+  {sev:'HIGH',hl:'Saudi Aramco cuts OSP for Asian customers $0.45/bbl — demand concern signal for Q2',src:'Platts',t:'8m',com:'BRENT',chk:'NONE',impl:'Bearish Asian crude differentials; MCX crude likely to correct ₹80-120',impacts:{OIL:78,GOLD:12,FX:30,INDIA:55}},
+  {sev:'CRITICAL',hl:'Gold surges $2,330/oz — USD DXY falls 0.8% on weak US jobs; MCX Gold up ₹400',src:'Reuters',t:'15m',com:'GOLD',chk:'NONE',impl:'BUY signal MCX Gold. USD/INR downside; safe-haven flow into silver and platinum',impacts:{OIL:20,GOLD:95,FX:80,INDIA:70}},
+  {sev:'HIGH',hl:'RBI holds repo rate 6.50%; signals possible cut June on softer inflation data',src:'Hindu Business',t:'28m',com:'CURRENCY',chk:'NONE',impl:'Positive NIFTY/SENSEX. USD/INR may strengthen slightly on rate differential',impacts:{OIL:10,GOLD:35,FX:75,INDIA:88}},
+  {sev:'HIGH',hl:'Houthi attacks resume Red Sea; LNG tankers divert +14 days via Cape of Good Hope',src:'LNG World',t:'35m',com:'LNG',chk:'BAB_EL_MANDEB',impl:'JKM spot tightening; Indian LNG importers (Petronet) face higher costs +12%',impacts:{OIL:75,GOLD:30,FX:40,INDIA:65}},
+  {sev:'HIGH',hl:'Norway North Sea offline 180kbpd — Equinor Oseberg maintenance 10-day shutdown',src:'Rigzone',t:'52m',com:'BRENT',chk:'NONE',impl:'Brent backwardation steepens; Dated Brent differential widening expected',impacts:{OIL:80,GOLD:15,FX:25,INDIA:35}},
+  {sev:'MEDIUM',hl:'EIA crude draw 4.2M bbl vs est -1.2M bbl; gasoline builds offset headline',src:'EIA',t:'1h',com:'WTI',chk:'NONE',impl:'Neutral to mildly bullish; products market spread plays active',impacts:{OIL:60,GOLD:8,FX:18,INDIA:28}},
+  {sev:'HIGH',hl:'China PBOC cuts RRR 50bps — stimulus boost; CNH strengthens, copper +2%',src:'CNBC',t:'1h 15m',com:'MULTIPLE',chk:'NONE',impl:'Risk-on globally. Copper/iron bullish. NIFTY Metal index rally likely; HINDALCO watch',impacts:{OIL:55,GOLD:48,FX:72,INDIA:65}},
+  {sev:'MEDIUM',hl:'USD/INR breaks 83.50 as RBI intervenes; crude import costs rise for Indian refiners',src:'ET Markets',t:'1h 42m',com:'CURRENCY',chk:'NONE',impl:'Negative HPCL/BPCL margins; Nifty Energy may underperform on currency headwind',impacts:{OIL:42,GOLD:38,FX:90,INDIA:75}},
+  {sev:'HIGH',hl:'Cyclone DANA Cat 3 intensifying — threatens Mumbai offshore platforms (ONGC)',src:'IMD India',t:'2h',com:'CRUDE_OIL',chk:'NONE',impl:'ONGC offshore production risk; MCX crude premium likely; domestic supply disruption',impacts:{OIL:70,GOLD:22,FX:35,INDIA:80}},
+  {sev:'MEDIUM',hl:'Copper 18-month high on China stimulus; SHFE open interest surges 12%',src:'Metal Bulletin',t:'2h 30m',com:'COPPER',chk:'NONE',impl:'Bullish MCX copper; Nifty Metal outperformance expected; watch Hindalco & Vedanta',impacts:{OIL:25,GOLD:40,FX:35,INDIA:62}},
+  {sev:'CRITICAL',hl:'US Fed signals no cut until July — DXY surges 0.6%; EM currencies under pressure',src:'Bloomberg',t:'3h',com:'CURRENCY',chk:'NONE',impl:'USD/INR upside; gold may correct $20-30; NIFTY FII flows could reverse short-term',impacts:{OIL:38,GOLD:72,FX:95,INDIA:82}},
+];
+
+const CHOKE=[
+  {n:'HORMUZ',      lat:26.56,lng:56.25, risk:'CRITICAL',flow:'20% global oil'},
+  {n:'MALACCA',     lat:1.26, lng:103.82,risk:'HIGH',    flow:'80% Asia energy'},
+  {n:'SUEZ',        lat:30.68,lng:32.35, risk:'HIGH',    flow:'12% global trade'},
+  {n:'BAB-EL-MANDEB',lat:12.58,lng:43.47,risk:'CRITICAL',flow:'Yemen route'},
+  {n:'BOSPHORUS',   lat:41.11,lng:29.07, risk:'MEDIUM',  flow:'Black Sea exports'},
+  {n:'DOVER',       lat:51.10,lng:1.42,  risk:'LOW',     flow:'North Sea route'},
+  {n:'DANISH STR.', lat:56.00,lng:10.50, risk:'LOW',     flow:'Baltic Sea'},
+];
+
+const VESSELS=[
+  {n:'ENERGY CROWN',  t:'VLCC Crude',  lat:26.2, lng:57.1,  fr:'Ras Tanura',    to:'Ningbo'},
+  {n:'PACIFIC EAGLE', t:'LNG Carrier', lat:2.8,  lng:104.5, fr:'Bintulu',       to:'Tokyo'},
+  {n:'NORTH STAR',    t:'Suezmax',     lat:30.1, lng:32.8,  fr:'Basra',         to:'Rotterdam'},
+  {n:'ATLAS PRIME',   t:'Product',     lat:57.2, lng:2.5,   fr:'Rotterdam',     to:'Houston'},
+  {n:'BLACK SEA I',   t:'VLCC Crude',  lat:42.5, lng:30.2,  fr:'Novorossiysk',  to:'Trieste'},
+  {n:'MALACCA GIANT', t:'VLCC Crude',  lat:4.2,  lng:100.5, fr:'Ras Tanura',    to:'Ulsan'},
+  {n:'JAI HIND',      t:'Suezmax',     lat:17.5, lng:72.8,  fr:'Fujairah',      to:'Jamnagar'},
+  {n:'PETRONET GAS',  t:'LNG Carrier', lat:20.9, lng:72.6,  fr:'Ras Laffan',    to:'Dahej'},
+  {n:'GULF EXPLORER', t:'LPG Carrier', lat:24.0, lng:52.5,  fr:'Jubail',        to:'Mumbai'},
+  {n:'NORDIC BREEZE', t:'LNG Carrier', lat:71.0, lng:28.0,  fr:'Hammerfest',    to:'Zeebrugge'},
+];
+
+const FOCAL=[
+  {title:'HORMUZ CRISIS',   src:6,desc:'Iran naval movement + tanker rerouting + oil premium spike. WTI +$3 risk.',tags:['S','G'],lat:26.56,lng:56.25},
+  {title:'GOLD BREAKOUT',   src:5,desc:'Gold, Silver, GLD ETF, MCX all correlating on USD weakness. MCX ₹+400 today.',tags:['M'],lat:null},
+  {title:'RED SEA REROUTE', src:5,desc:'Houthi attacks forcing LNG/product tankers via Cape. +14 days transit time.',tags:['S','G'],lat:12.58,lng:43.47},
+  {title:'INDIA FX STRESS', src:4,desc:'USD/INR testing 83.50, RBI intervention. Fed hawkishness + crude import bill.',tags:['I','M'],lat:20.5,lng:78.9},
+];
+
+const REGIONS=[
+  {lab:'🌏 GULF',    lat:26,  lng:53,   z:5},
+  {lab:'🌊 MALACCA', lat:3,   lng:104,  z:5},
+  {lab:'🗺️ N.SEA',  lat:57,  lng:3,    z:5},
+  {lab:'🌊 BKSEA',  lat:43,  lng:35,   z:5},
+  {lab:'⛵ SUEZ',    lat:30.5,lng:32.5, z:6},
+  {lab:'🇮🇳 INDIA', lat:20.5,lng:78.9, z:4},
+  {lab:'🌐 GLOBAL',  lat:20,  lng:0,    z:2},
+];
+
+const LAYERS_CFG=[
+  {id:'vessels',   icon:'🛳',  lab:'Tanker Tracking'},
+  {id:'pipelines', icon:'〰',  lab:'Pipelines'},
+  {id:'refineries',icon:'🔥',  lab:'Refineries'},
+  {id:'weather',   icon:'🌀',  lab:'Weather Risks'},
+  {id:'conflicts', icon:'⚠️', lab:'Supply Risk Zones'},
+  {id:'india',     icon:'🇮🇳',lab:'India Infrastructure'},
+];
+
+// ── MAP ────────────────────────────────────────────────────
+let map, MK={};
+function initMap(){
+  map=L.map('map',{center:[18,50],zoom:3,zoomControl:true,attributionControl:false});
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:18}).addTo(map);
+  MK={chokepoints:[],vessels:[],refineries:[],weather:[],conflicts:[],india:[],pipelines:[]};
+  addChokepoints(); addVessels(); addRefineries(); addWeather(); addConflicts(); addIndia();
+}
+function mkIcon(html,sz=[24,24]){return L.divIcon({html,className:'',iconSize:sz,iconAnchor:[sz[0]/2,sz[1]/2]});}
+function popup(content){return `<div style="font-family:monospace;min-width:180px;font-size:10.5px;line-height:1.7;">${content}</div>`;}
+
+function addChokepoints(){
+  CHOKE.forEach(c=>{
+    const col=c.risk==='CRITICAL'?'#ff3b3b':c.risk==='HIGH'?'#f5a623':'#29b6f6';
+    const ic=mkIcon(`<div style="position:relative;width:34px;height:34px;">
+      <div style="position:absolute;inset:0;border-radius:50%;border:2px solid ${col};animation:ring-pulse 2s ease-out infinite;"></div>
+      <div style="position:absolute;inset:7px;border-radius:50%;border:1px solid ${col};opacity:.5;animation:ring-pulse 2s ease-out infinite .4s;"></div>
+      <div style="position:absolute;inset:13px;background:${col};border-radius:50%;"></div>
+    </div>`,[34,34]);
+    MK.chokepoints.push(L.marker([c.lat,c.lng],{icon:ic}).addTo(map).bindPopup(popup(
+      `<div style="color:#f5a623;font-size:11px;letter-spacing:2px;margin-bottom:6px;">${c.n}</div>
+       <div style="color:#aaa;">RISK: <b style="color:${col}">${c.risk}</b></div>
+       <div style="color:#aaa;">FLOW: <b style="color:#e8edf2">${c.flow}</b></div>`)));
+  });
+}
+
+function addVessels(){
+  VESSELS.forEach(v=>{
+    const col=v.t.includes('LNG')?'#29b6f6':v.t.includes('LPG')?'#00e676':'#f5a623';
+    MK.vessels.push(L.marker([v.lat,v.lng],{icon:mkIcon(`<div style="color:${col};font-size:15px;text-shadow:0 0 5px ${col}">⛴</div>`)})
+      .addTo(map).bindPopup(popup(
+        `<div style="color:#f5a623;margin-bottom:5px;">${v.n}</div>
+         TYPE: <b style="color:#e8edf2">${v.t}</b><br>
+         <b style="color:#e8edf2">${v.fr}</b> → <b style="color:#e8edf2">${v.to}</b>`)));
+  });
+}
+
+function addRefineries(){
+  const R=[
+    {n:'Ras Tanura',c:'Saudi Arabia',lat:26.6,lng:50.0,cap:'550 kbpd'},
+    {n:'Jamnagar', c:'India',        lat:22.4,lng:70.1,cap:'1.24 mbpd'},
+    {n:'Rotterdam',c:'Netherlands',  lat:51.9,lng:4.5, cap:'400 kbpd'},
+    {n:'Ulsan',    c:'S.Korea',      lat:35.5,lng:129.3,cap:'840 kbpd'},
+    {n:'Vizag',    c:'India',        lat:17.7,lng:83.3,cap:'372 kbpd'},
+    {n:'Singapore',c:'Singapore',    lat:1.27,lng:103.7,cap:'600 kbpd'},
+    {n:'Ruwais',   c:'UAE',          lat:24.1,lng:52.7,cap:'417 kbpd'},
+    {n:'Abadan',   c:'Iran',         lat:30.3,lng:48.3,cap:'400 kbpd'},
+  ];
+  R.forEach(r=>MK.refineries.push(L.marker([r.lat,r.lng],{icon:mkIcon('<div style="color:#ff6b35;font-size:13px;text-shadow:0 0 4px #ff6b35">🔥</div>')})
+    .addTo(map).bindPopup(popup(`<div style="color:#ff6b35;margin-bottom:4px;">${r.n}</div>
+      COUNTRY: <b style="color:#e8edf2">${r.c}</b><br>CAP: <b style="color:#f5a623">${r.cap}</b><br>STATUS: <b style="color:#00e676">● ACTIVE</b>`))));
+}
+
+function addWeather(){
+  const W=[
+    {n:'Cyclone DANA',    lat:15.5,lng:62.0, cat:'Cat 3',  thr:'Arabian Sea / Mumbai Offshore'},
+    {n:'Hurricane XIOMARA',lat:28.5,lng:-71.0,cat:'Cat 2', thr:'Gulf of Mexico platforms'},
+    {n:'North Sea Low',   lat:62.0,lng:0.0,  cat:'Severe', thr:'Norwegian/UK oilfields'},
+    {n:'Bay of Bengal Low',lat:16.0,lng:87.5,cat:'Dep',    thr:'Paradip/Vizag India terminals'},
+  ];
+  W.forEach(w=>MK.weather.push(L.marker([w.lat,w.lng],{icon:mkIcon('<div style="color:#29b6f6;font-size:18px;text-shadow:0 0 8px #29b6f6">🌀</div>',[22,22])})
+    .addTo(map).bindPopup(popup(`<div style="color:#29b6f6;margin-bottom:4px;">${w.n}</div>
+      CAT: <b style="color:#ff3b3b">${w.cat}</b><br>THREAT: <b style="color:#f5a623">${w.thr}</b>`))));
+}
+
+function addConflicts(){
+  const Z=[
+    {n:'Yemen/Red Sea', lat:14.5,lng:44.0,r:'HIGH',  d:'Houthi ops targeting shipping'},
+    {n:'Iraq Kurdistan',lat:36.2,lng:44.5,r:'MEDIUM',d:'Pipeline sabotage risk'},
+    {n:'Libya East',    lat:27.0,lng:22.0,r:'HIGH',  d:'Port closures; crude disrupted'},
+    {n:'Ukraine/Russia',lat:48.0,lng:37.0,r:'HIGH',  d:'Gas pipeline + Black Sea shipping'},
+  ];
+  Z.forEach(z=>{
+    const col=z.r==='HIGH'?'#ff3b3b':'#f5a623';
+    MK.conflicts.push(L.marker([z.lat,z.lng],{icon:mkIcon(`<div style="width:10px;height:10px;background:${col};border-radius:2px;box-shadow:0 0 7px ${col};border:1px solid ${col};"></div>`,[10,10])})
+      .addTo(map).bindPopup(popup(`<div style="color:${col};margin-bottom:4px;">${z.n}</div>
+        RISK: <b style="color:${col}">${z.r}</b><br>${z.d}`)));
+  });
+}
+
+function addIndia(){
+  const I=[
+    {n:'Jamnagar Refinery',lat:22.4,lng:70.1,t:'REFINERY',op:'Reliance'},
+    {n:'Dahej LNG Terminal',lat:21.7,lng:72.5,t:'LNG',    op:'Petronet'},
+    {n:'Paradip Refinery',  lat:20.3,lng:86.6,t:'REFINERY',op:'IOC'},
+    {n:'Kochi Refinery',    lat:9.9, lng:76.3,t:'REFINERY',op:'BPCL'},
+    {n:'BG-1 ONGC Offshore',lat:19.1,lng:71.9,t:'OFFSHORE',op:'ONGC'},
+    {n:'Mundra Port',       lat:22.8,lng:70.0,t:'TERMINAL',op:'Adani'},
+  ];
+  I.forEach(ii=>{
+    const col=ii.t==='LNG'?'#29b6f6':ii.t==='OFFSHORE'?'#c084fc':ii.t==='TERMINAL'?'#00e676':'#ff9933';
+    MK.india.push(L.marker([ii.lat,ii.lng],{icon:mkIcon(`<div style="color:${col};font-size:13px;text-shadow:0 0 4px ${col}">${ii.t==='LNG'?'⬡':ii.t==='OFFSHORE'?'◈':ii.t==='TERMINAL'?'⊕':'🔥'}</div>`)})
+      .addTo(map).bindPopup(popup(`<div style="color:#ff9933;margin-bottom:4px;">🇮🇳 ${ii.n}</div>
+        TYPE: <b style="color:${col}">${ii.t}</b><br>OP: <b style="color:#f5a623">${ii.op}</b>`)));
+  });
+}
+
+function toggleLayer(id){
+  S.layers[id]=!S.layers[id];
+  (MK[id]||[]).forEach(m=>S.layers[id]?map.addLayer(m):map.removeLayer(m));
+  const tog=document.querySelector(`[data-lid="${id}"]`);
+  if(tog) tog.classList.toggle('on',S.layers[id]);
+}
+function flyTo(lat,lng,z){map.flyTo([lat,lng],z,{duration:1.3});}
+
+// ── TICKER ─────────────────────────────────────────────────
+function buildTicker(){
+  const all=[...PD.ENERGY,...PD.METALS,...PD.FX,...PD.INDIA.slice(0,4)];
+  const items=all.map(p=>{
+    const dir=p.ch>0?'up':p.ch<0?'dn':'fl';
+    const s=p.ch>0?'+':'';
+    const dp=p.px>100?2:p.px>1?4:5;
+    return `<div class="tick-item" onclick="openChart('${p.lab}',${p.px})">
+      <span class="t-name">${p.lab}</span>
+      <span class="t-price">${p.px.toFixed(dp)}</span>
+      <span class="t-chg ${dir}">${s}${Math.abs(p.ch).toFixed(dp)}</span>
+    </div>`;
+  }).join('');
+  document.getElementById('ticker-track').innerHTML=items+items;
+}
+
+// ── PRICE GRID ─────────────────────────────────────────────
+function buildPriceGrid(tab){
+  const data=PD[tab]||PD.ENERGY;
+  document.getElementById('price-grid').innerHTML=data.map(p=>{
+    const dir=p.ch>0?'up':'dn';
+    const s=p.ch>0?'+':'';
+    const pct=Math.abs(p.ch/p.px*100);
+    const dp=p.px>100?2:p.px>1?4:5;
+    return `<div class="pcard" onclick="openChart('${p.lab}',${p.px})">
+      <div class="pl">${p.lab}</div>
+      <div class="pp">${p.px.toFixed(dp)}</div>
+      <div class="pch ${dir}">${s}${Math.abs(p.ch).toFixed(dp)} <span style="font-size:7.5px;">(${s}${pct.toFixed(2)}%)</span></div>
+      <div class="pbar"><div class="pbfill" style="width:${Math.min(pct*20,100)}%;background:${p.ch>0?'#00e676':'#ff3b3b'};"></div></div>
+    </div>`;
+  }).join('');
+}
+function setPTab(tab,btn){
+  S.priceTab=tab; buildPriceGrid(tab);
+  document.querySelectorAll('.ph-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ── GOLD PANEL ─────────────────────────────────────────────
+function buildGold(){
+  const rows=GOLD_DATA.map(g=>`<tr onclick="openChart('${g.sym}',${g.px})" style="cursor:pointer;">
+    <td class="amber">${g.sym}</td>
+    <td style="color:#888;font-size:8px;">${g.ex}</td>
+    <td style="color:#e8edf2;font-weight:bold;">${g.px>1000?g.px.toLocaleString('en-IN'):g.px.toFixed(2)}</td>
+    <td class="${g.ch>0?'up':'dn'}">${g.ch>0?'+':''}${Math.abs(g.ch)>10?g.ch.toFixed(0):g.ch.toFixed(2)}</td>
+    <td class="${g.ch>0?'up':'dn'}">${g.chp}</td>
+    <td><span class="signal ${g.sig}">${g.sig}</span></td>
+  </tr>`).join('');
+  document.getElementById('gold-panel').innerHTML=`<table class="dtable">
+    <thead><tr><th>INSTR</th><th>EXCH</th><th>PRICE</th><th>CHG</th><th>%</th><th>SIG</th></tr></thead>
+    <tbody>${rows}</tbody></table>`;
+}
+
+// ── OIL PANEL ──────────────────────────────────────────────
+function buildOil(){
+  const supCol=s=>s==='TIGHT'?'#ff9933':s==='SURPLUS'?'#00e676':'#29b6f6';
+  const rows=OIL_DATA.map(o=>`<tr onclick="openChart('${o.sym}',${o.px})" style="cursor:pointer;">
+    <td class="amber">${o.sym}</td>
+    <td style="color:#e8edf2;font-weight:bold;">${o.px>1000?o.px.toLocaleString('en-IN'):o.px.toFixed(2)}</td>
+    <td style="font-size:8px;color:#666;">${o.u}</td>
+    <td class="${o.ch>0?'up':'dn'}">${o.ch>0?'+':''}${o.ch.toFixed(2)}</td>
+    <td class="${o.ch>0?'up':'dn'}">${o.chp}</td>
+    <td style="font-size:8px;color:${supCol(o.sup)}">${o.sup}</td>
+  </tr>`).join('');
+  document.getElementById('oil-panel').innerHTML=`<table class="dtable">
+    <thead><tr><th>CRUDE/GAS</th><th>PRICE</th><th>UNIT</th><th>CHG</th><th>%</th><th>SUPPLY</th></tr></thead>
+    <tbody>${rows}</tbody></table>`;
+}
+
+// ── INDIA PANEL ────────────────────────────────────────────
+function buildIndia(){
+  const rows=INDIA_DATA.map(i=>`<tr onclick="openChart('${i.sym}',${i.px})" style="cursor:pointer;">
+    <td class="saffron">${i.sym}</td>
+    <td style="color:#e8edf2;font-weight:bold;">${i.px>10000?i.px.toLocaleString('en-IN'):i.px.toFixed(i.px>100?2:4)}</td>
+    <td class="${i.ch>0?'up':'dn'}">${i.ch>0?'+':''}${Math.abs(i.ch)>100?i.ch.toFixed(0):i.ch.toFixed(2)}</td>
+    <td class="${i.ch>0?'up':'dn'}">${i.chp}</td>
+    <td style="font-size:8px;color:#666;">${i.vol}</td>
+    <td style="font-size:8px;color:var(--saffron);">${i.ex}</td>
+  </tr>`).join('');
+  document.getElementById('india-panel').innerHTML=`<table class="dtable">
+    <thead><tr><th>INSTRUMENT</th><th>PRICE</th><th>CHG</th><th>%</th><th>VOL</th><th>EXCH</th></tr></thead>
+    <tbody>${rows}</tbody></table>`;
+  // Update status bar
+  document.getElementById('sb-nifty').textContent=INDIA_DATA[0].px.toLocaleString('en-IN',{maximumFractionDigits:2})+(INDIA_DATA[0].ch>0?' ▲':' ▼');
+  document.getElementById('sb-gold').textContent='₹'+INDIA_DATA[6].px.toLocaleString('en-IN',{maximumFractionDigits:0})+(INDIA_DATA[6].ch>0?' ▲':' ▼');
+}
+
+// ── FX PANEL ───────────────────────────────────────────────
+function buildFX(){
+  let rows='',last='';
+  FX_DATA.forEach(f=>{
+    if(f.cat!==last){
+      const lbl=f.cat==='MAJOR'?'● MAJOR':f.cat==='INDIA'?'🇮🇳 INDIA':f.cat==='CMDTY'?'🛢 COMMODITY':'● EM';
+      rows+=`<tr><td colspan="5" style="padding:3px 7px 1px;font-family:var(--font-mono);font-size:7px;color:var(--muted);letter-spacing:2px;background:rgba(0,0,0,0.18);">${lbl}</td></tr>`;
+      last=f.cat;
+    }
+    const dp=f.rate>10?4:4;
+    rows+=`<tr onclick="openChart('${f.pair}',${f.rate})" style="cursor:pointer;">
+      <td class="amber">${f.pair}</td>
+      <td style="color:#e8edf2;font-weight:bold;">${f.rate.toFixed(dp)}</td>
+      <td class="${f.ch>0?'up':'dn'}">${f.ch>0?'+':''}${Math.abs(f.ch).toFixed(f.ch<1?4:2)}</td>
+      <td class="${f.ch>0?'up':'dn'}">${f.chp}</td>
+      <td style="font-size:8px;color:#555;">${f.hi.toFixed(f.hi>10?2:4)}</td>
+    </tr>`;
+  });
+  document.getElementById('fx-panel').innerHTML=`<table class="dtable">
+    <thead><tr><th>PAIR</th><th>RATE</th><th>CHG</th><th>%</th><th>HIGH</th></tr></thead>
+    <tbody>${rows}</tbody></table>`;
+  document.getElementById('sb-usdinr').textContent=FX_DATA.find(f=>f.pair==='USD/INR').rate.toFixed(4);
+  document.getElementById('sb-wti').textContent='$'+OIL_DATA[0].px.toFixed(2);
+}
+
+// ── NEWS IMPACT ────────────────────────────────────────────
+function buildNewsImpact(){
+  const html=NEWS.slice(0,7).map(n=>{
+    const mx=Math.max(...Object.values(n.impacts));
+    const bc=n.sev==='CRITICAL'?'#ff3b3b':n.sev==='HIGH'?'#f5a623':'#29b6f6';
+    return `<div class="ni-item" onclick="this.classList.toggle('open')">
+      <div style="position:absolute;bottom:0;left:0;height:2px;width:${mx}%;background:${bc};"></div>
+      <span class="ni-sev ${n.sev}">${n.sev}</span>
+      <div class="ni-hl">${n.hl}</div>
+      <div class="ni-impl">${n.impl}</div>
+      <div class="ni-meta">
+        <span>${n.src}</span><span>${n.t} ago</span>
+        <span class="ni-com">${n.com.replace('_',' ')}</span>
+        <span style="margin-left:auto;color:var(--amber);font-size:7.5px;">TOP: ${Object.entries(n.impacts).sort((a,b)=>b[1]-a[1])[0][0]}</span>
+      </div>
+      <div class="imp-chips">${Object.entries(n.impacts).map(([k,v])=>`<span class="imp-chip" style="color:${v>70?'#ff3b3b':v>45?'#f5a623':'#4a5568'}">${k} ${v}%</span>`).join('')}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('ni-panel').innerHTML=html;
+  document.getElementById('ni-cnt').textContent=NEWS.length;
+}
+
+// ── FULL NEWS FEED ─────────────────────────────────────────
+function buildNewsFeed(){
+  const html=NEWS.map(n=>{
+    const bc=n.sev==='CRITICAL'?'#ff3b3b':n.sev==='HIGH'?'#f5a623':'#29b6f6';
+    const mx=Math.max(...Object.values(n.impacts));
+    return `<div class="ni-item" onclick="this.classList.toggle('open')">
+      <div style="position:absolute;bottom:0;left:0;height:2px;width:${mx}%;background:${bc};"></div>
+      <span class="ni-sev ${n.sev}">${n.sev}</span>
+      <div class="ni-hl">${n.hl}</div>
+      <div class="ni-impl">${n.impl}</div>
+      <div class="ni-meta">
+        <span>${n.src}</span><span>${n.t} ago</span>
+        <span class="ni-com">${n.com.replace('_',' ')}</span>
+        ${n.chk!=='NONE'?`<span style="color:#ff3b3b;font-size:7.5px;">📍${n.chk}</span>`:''}
+      </div>
+      <div class="imp-chips">${Object.entries(n.impacts).map(([k,v])=>`<span class="imp-chip" style="color:${v>70?'#ff3b3b':v>45?'#f5a623':'#4a5568'}">${k} ${v}%</span>`).join('')}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('news-feed').innerHTML=html;
+  document.getElementById('news-cnt').textContent=NEWS.length;
+}
+
+// ── FOCAL POINTS ───────────────────────────────────────────
+function buildFocal(){
+  document.getElementById('fp-list').innerHTML=FOCAL.map(f=>`
+    <div class="fp-item" onclick="${f.lat?`flyTo(${f.lat},${f.lng},5);closeSidebars()`:''}" >
+      <div class="fp-top"><span class="fp-title">${f.title}</span><span class="fp-src">${f.src} SRC</span></div>
+      <div class="fp-desc">${f.desc}</div>
+      <div class="fp-tags">${f.tags.map(t=>`<span class="ftag ${t}">${t==='S'?'⚠ SUPPLY':t==='G'?'🌐 GEO':t==='I'?'🇮🇳 INDIA':'💹 MARKETS'}</span>`).join('')}</div>
+    </div>`).join('');
+  document.getElementById('fp-cnt').textContent=FOCAL.length;
+}
+
+// ── LAYERS ─────────────────────────────────────────────────
+function buildLayers(){
+  document.getElementById('layer-ctrl').innerHTML=LAYERS_CFG.map(l=>`
+    <div class="lc-row" onclick="toggleLayer('${l.id}')">
+      <span class="lc-lbl"><span>${l.icon}</span>${l.lab}</span>
+      <div class="toggle on" data-lid="${l.id}"></div>
+    </div>`).join('');
+}
+
+// ── REGIONS ────────────────────────────────────────────────
+function buildRegions(){
+  document.getElementById('rgn-btns').innerHTML=REGIONS.map((r,i)=>`
+    <button class="rbtn ${i===0?'active':''}" onclick="flyTo(${r.lat},${r.lng},${r.z});setRA(this);closeSidebars()">${r.lab}</button>`).join('');
+}
+function setRA(btn){document.querySelectorAll('.rbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+
+// ── VARIANTS ───────────────────────────────────────────────
+function setVariant(v,btn){
+  S.variant=v; buildPriceGrid(v);
+  document.querySelectorAll('.vbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(v==='INDIA') flyTo(20.5,78.9,4);
+}
+
+// ── WORLDMONITOR ───────────────────────────────────────────
+function openWM(){
+  const ov=document.getElementById('wm-overlay');
+  const fr=document.getElementById('wm-frame');
+  if(!fr.src) fr.src=CFG.WM_URL;
+  ov.classList.add('open');
+  showAlert('WORLDMONITOR','🌍 WorldMonitor global intelligence feed loaded — koala73/worldmonitor','wm');
+}
+function closeWM(){document.getElementById('wm-overlay').classList.remove('open');}
+
+// ── CHART MODAL ────────────────────────────────────────────
+function openChart(label,price){
+  document.getElementById('cm-title').textContent=label;
+  document.getElementById('cm-price').textContent=price>1000?'₹'+price.toLocaleString('en-IN',{maximumFractionDigits:2}):'$'+price.toFixed(price<10?4:2);
+  document.getElementById('chart-modal').classList.add('open');
+  drawChart(price);
+  const hi=price*(1+Math.random()*.015),lo=price*(1-Math.random()*.012),chg=price*(Math.random()-.48)*.02;
+  document.getElementById('cm-stats').innerHTML=[
+    {l:'DAY HIGH',v:(hi).toFixed(price>100?2:4),cls:''},
+    {l:'DAY LOW', v:(lo).toFixed(price>100?2:4),cls:''},
+    {l:'CHANGE',  v:(chg>0?'+':'')+chg.toFixed(price>100?2:4),cls:chg>0?'up':'dn'},
+    {l:'52W HIGH',v:(price*1.08).toFixed(price>100?2:4),cls:''},
+  ].map(s=>`<div class="cm-stat"><div class="cs-lbl">${s.l}</div><div class="cs-val ${s.cls}">${s.v}</div></div>`).join('');
+}
+function closeModal(){document.getElementById('chart-modal').classList.remove('open');}
+function drawChart(base){
+  const cv=document.getElementById('spark-cv');
+  cv.width=cv.offsetWidth||460; cv.height=150;
+  const ctx=cv.getContext('2d'),W=cv.width,H=150;
+  let pts=[base];
+  for(let i=1;i<42;i++) pts.push(pts[pts.length-1]*(1+(Math.random()-.487)*.006));
+  const mn=Math.min(...pts)*.997,mx=Math.max(...pts)*1.003;
+  const sy=v=>H-((v-mn)/(mx-mn))*(H-20)-10;
+  ctx.clearRect(0,0,W,H);
+  ctx.strokeStyle='rgba(245,166,35,0.07)';ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){const y=10+(H-20)*i/4;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+  const trend=pts[pts.length-1]>pts[0];
+  const lc=trend?'#00e676':'#ff3b3b';
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,trend?'rgba(0,230,118,0.22)':'rgba(255,59,59,0.22)');
+  g.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.beginPath();
+  pts.forEach((p,i)=>{const x=i/(pts.length-1)*W,y=sy(p);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});
+  ctx.strokeStyle=lc;ctx.lineWidth=2;ctx.stroke();
+  ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();ctx.fillStyle=g;ctx.fill();
+  const lp=pts[pts.length-1],ly=sy(lp);
+  ctx.fillStyle=lc;ctx.font='bold 10px Share Tech Mono,monospace';
+  ctx.fillText(lp>1000?'₹'+lp.toLocaleString('en-IN',{maximumFractionDigits:0}):'$'+lp.toFixed(lp<10?4:2),W-78,ly-4);
+}
+
+// ── ALERTS ─────────────────────────────────────────────────
+function showAlert(type,msg,cls=''){
+  S.alertCount++;
+  document.getElementById('sb-alrt').textContent=S.alertCount;
+  const panel=document.getElementById('alert-panel');
+  const d=document.createElement('div');
+  d.className=`toast ${cls}`;
+  d.innerHTML=`<div class="t-type">⬡ ${type}</div>${msg}`;
+  panel.appendChild(d);
+  if(cls==='crit') playBeep(880);
+  if(cls==='india') playBeep(660);
+  setTimeout(()=>{d.classList.add('fading');setTimeout(()=>d.remove(),350);},6500);
+  d.onclick=()=>d.remove();
+}
+function testAlert(){
+  const pool=[
+    {t:'CHOKEPOINT',m:'⚠ Strait of Hormuz — Iranian naval patrol intercepting VLCC tanker.',c:'crit'},
+    {t:'🇮🇳 INDIA',  m:'📈 NIFTY 50 breaks 22,600 — FII net buyers ₹1,240 Cr today.',c:'india'},
+    {t:'GOLD MCX',   m:'🥇 MCX Gold ₹72,000 resistance test — COMEX above $2,330.',c:''},
+    {t:'WORLDMONITOR',m:'🌍 8-source focal: Fed impact on EM currencies detected.',c:'wm'},
+    {t:'RED SEA',    m:'🚢 3 VLCCs rerouting Cape of Good Hope — freight +35%.',c:'crit'},
+  ];
+  const x=pool[Math.floor(Math.random()*pool.length)];
+  showAlert(x.t,x.m,x.c);
+}
+function playBeep(freq=440){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);
+    o.frequency.value=freq;o.type='sine';
+    g.gain.setValueAtTime(.1,ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.22);
+    o.start(ctx.currentTime);o.stop(ctx.currentTime+.22);
+  }catch(e){}
+}
+
+// ── IST CLOCK (India Standard Time = UTC+5:30) ────────────
+function updateClocks(){
+  const now=new Date();
+  const utcMs=now.getTime();
+  const istMs=utcMs+(5.5*3600*1000);
+  const ist=new Date(istMs);
+  const pad=v=>String(v).padStart(2,'0');
+  const istStr=`${pad(ist.getUTCHours())}:${pad(ist.getUTCMinutes())}:${pad(ist.getUTCSeconds())} IST`;
+  const utcStr=`${pad(now.getUTCHours())}:${pad(now.getUTCMinutes())} UTC`;
+  document.getElementById('clock-ist').textContent=istStr;
+  document.getElementById('clock-utc').textContent=utcStr;
+  document.getElementById('sb-ist').textContent=`${pad(ist.getUTCHours())}:${pad(ist.getUTCMinutes())}`;
+}
+
+// ── 1-SECOND LIVE REFRESH ──────────────────────────────────
+// Micro-jitter prices every second for live feel
+function microJitter(){
+  S.tick++;
+  // Jitter all prices slightly every second
+  Object.values(PD).forEach(g=>g.forEach(p=>{
+    const j=(Math.random()-.4995)*p.px*.0004;
+    p.px=Math.max(.0001,p.px+j); p.ch+=j;
+  }));
+  GOLD_DATA.forEach(g=>{const j=(Math.random()-.4995)*g.px*.0004;g.px=Math.max(.01,g.px+j);g.ch+=j;g.chp=(g.ch>0?'+':'')+((g.ch/g.px)*100).toFixed(2)+'%';});
+  OIL_DATA.forEach(o=>{const j=(Math.random()-.4995)*o.px*.0004;o.px=Math.max(.01,o.px+j);o.ch+=j;o.chp=(o.ch>0?'+':'')+((o.ch/o.px)*100).toFixed(2)+'%';});
+  FX_DATA.forEach(f=>{const j=(Math.random()-.4995)*f.rate*.0002;f.rate=Math.max(.0001,f.rate+j);f.ch+=j;f.chp=(f.ch>0?'+':'')+((f.ch/f.rate)*100).toFixed(2)+'%';});
+  INDIA_DATA.forEach(i=>{const j=(Math.random()-.4995)*i.px*.0003;i.px=Math.max(.01,i.px+j);i.ch+=j;i.chp=(i.ch>0?'+':'')+((i.ch/i.px)*100).toFixed(2)+'%';});
+
+  // Update displays every second
+  buildTicker();
+  buildPriceGrid(S.priceTab);
+
+  // Full panel refresh every 5 seconds
+  if(S.tick%5===0){ buildGold(); buildOil(); buildIndia(); buildFX(); }
+
+  // Blink live dot
+  const dot=document.getElementById('live-dot');
+  dot.style.background=S.tick%2===0?'#00e676':'#00b359';
+
+  // Update status bar prices
+  document.getElementById('sb-nifty').textContent=INDIA_DATA[0].px.toLocaleString('en-IN',{maximumFractionDigits:0})+(INDIA_DATA[0].ch>0?' ▲':' ▼');
+  document.getElementById('sb-gold').textContent='₹'+INDIA_DATA[6].px.toLocaleString('en-IN',{maximumFractionDigits:0})+(INDIA_DATA[6].ch>0?' ▲':' ▼');
+  document.getElementById('sb-wti').textContent='$'+OIL_DATA[0].px.toFixed(2);
+  document.getElementById('sb-usdinr').textContent=FX_DATA.find(f=>f.pair==='USD/INR').rate.toFixed(4);
+}
+
+// ── BRANDING ROTATION ──────────────────────────────────────
+const SFXS=['INTELLIGENCE','TERMINAL','MARKETS','MONITOR'];
+const TLS=['GLOBAL COMMODITY & MARKET INTELLIGENCE','PERSONAL TRADING INTELLIGENCE TERMINAL','PRIVATE MARKET INTELLIGENCE SYSTEM','COMMODITY & FX RESEARCH DESK'];
+let bIdx=0;
+function rotateBrand(){
+  bIdx=(bIdx+1)%SFXS.length;
+  const sfx=document.getElementById('logo-sfx');
+  if(sfx){sfx.style.opacity='0';setTimeout(()=>{sfx.textContent=SFXS[bIdx];sfx.style.opacity='1';},300);}
+  document.querySelectorAll('.tline').forEach((el,i)=>el.classList.toggle('on',i===bIdx));
+}
+
+// ── MOBILE MENU ────────────────────────────────────────────
+function toggleMenu(){
+  const l=document.getElementById('sidebar-left');
+  if(l.classList.contains('open')){closeSidebars();}
+  else{l.classList.add('open');document.getElementById('drawer-overlay').classList.add('open');}
+}
+function closeSidebars(){
+  document.getElementById('sidebar-left').classList.remove('open');
+  document.getElementById('sidebar-right').classList.remove('open');
+  document.getElementById('drawer-overlay').classList.remove('open');
+}
+function phoneNav(target,btn){
+  document.querySelectorAll('.pnav-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(target==='left'){
+    document.getElementById('sidebar-left').classList.add('open');
+    document.getElementById('sidebar-right').classList.remove('open');
+    document.getElementById('drawer-overlay').classList.add('open');
+  } else if(target==='right'){
+    document.getElementById('sidebar-right').classList.add('open');
+    document.getElementById('sidebar-left').classList.remove('open');
+    document.getElementById('drawer-overlay').classList.add('open');
+  } else { closeSidebars(); }
+}
+function checkPhone(){S.phone=window.innerWidth<=600;}
+window.addEventListener('resize',()=>{checkPhone();if(!S.phone)closeSidebars();});
+
+// ── LOADING ────────────────────────────────────────────────
+const LD_STEPS=[
+  'INITIALIZING ANIKET LAD TERMINAL...',
+  'LOADING INDIA MARKET DATA (NSE·BSE·MCX)...',
+  'BUILDING FX MATRIX — 15 PAIRS...',
+  'RENDERING MAP LAYERS + CHOKEPOINTS...',
+  'LINKING WORLDMONITOR (koala73/worldmonitor)...',
+  'STARTING 1-SECOND LIVE REFRESH...',
+  '⚡ ANIKET LAD INTELLIGENCE — ONLINE',
+];
+const LD_MODS=['lm-px','lm-in','lm-fx','lm-mp','lm-wm','lm-ai'];
+let ldI=0;
+const ldInt=setInterval(()=>{
+  ldI++;
+  if(ldI<LD_STEPS.length) document.getElementById('ld-status').textContent=LD_STEPS[ldI];
+  if(ldI<=LD_MODS.length) document.getElementById(LD_MODS[ldI-1]).classList.add('ok');
+  if(ldI>=LD_STEPS.length-1){
+    clearInterval(ldInt);
+    setTimeout(()=>{
+      document.getElementById('loading').classList.add('hidden');
+      setTimeout(()=>document.getElementById('loading').remove(),500);
+      setTimeout(()=>showAlert('⚡ ANIKET LAD TERMINAL','Private Intelligence System v2.1 online — 1-second live refresh active — IST clock enabled'),900);
+      setTimeout(()=>showAlert('🇮🇳 INDIA MARKETS','NIFTY: 22,485 ▲ | MCX Gold: ₹71,420 ▲ | USD/INR: 83.47 | India VIX: 14.32','india'),2400);
+      setTimeout(()=>showAlert('WORLDMONITOR LINKED','🌍 Click "WORLD INTEL" to open WorldMonitor live feed — koala73/worldmonitor','wm'),4200);
+      // Start live refresh AFTER loading
+      setInterval(microJitter,1000);
+      setInterval(rotateBrand,3500);
+    },350);
+  }
+},420);
+
+// ── PERIODIC ALERTS ────────────────────────────────────────
+const ALERT_POOL=[
+  {t:'🇮🇳 INDIA',   m:'NIFTY ENERGY +1.2% leading — ONGC, Reliance, BPCL all gaining.',c:'india'},
+  {t:'GOLD MCX',     m:'🥇 MCX Gold approaching ₹72,000 — COMEX +$15 supporting.',c:''},
+  {t:'OIL SIGNAL',   m:'🛢 Brent backwardation widening — 3M spread $1.80/bbl.',c:''},
+  {t:'FX ALERT',     m:'💱 RBI spotted selling USD at 83.55 — resistance intact.',c:'india'},
+  {t:'WORLDMONITOR', m:'🌍 WM 7-source focal: Hormuz + Brent + tanker rerouting.',c:'wm'},
+  {t:'RED SEA',      m:'⚠ 2 VLCC crude tankers now rerouting Cape — ETA +12 days.',c:'crit'},
+];
+let apIdx=0;
+
+// ── BOOT ───────────────────────────────────────────────────
+window.addEventListener('load',()=>{
+  checkPhone();
+  initMap();
+  buildTicker();
+  buildPriceGrid('ENERGY');
+  buildGold(); buildOil(); buildIndia(); buildFX();
+  buildNewsFeed(); buildNewsImpact();
+  buildFocal(); buildLayers(); buildRegions();
+
+  // 1-second clock (starts immediately)
+  setInterval(updateClocks,1000);
+  updateClocks();
+
+  // Periodic alerts every 40s
+  setInterval(()=>{const a=ALERT_POOL[apIdx%ALERT_POOL.length];apIdx++;showAlert(a.t,a.m,a.c);},40000);
+
+  document.getElementById('chart-modal').addEventListener('click',e=>{
+    if(e.target===document.getElementById('chart-modal')) closeModal();
+  });
+});
+</script>
+<style>@keyframes ring-pulse{0%{transform:scale(1);opacity:.9}100%{transform:scale(2.3);opacity:0}}</style>
+</body>
+</html>
