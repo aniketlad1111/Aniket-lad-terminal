@@ -1,4 +1,4 @@
-# ⚡ Aniket Lad Intelligence Terminal
+# ⚡ Aniket Lad Intelligence Terminal 
 
 > **Personal Commodity, FX & India Market Intelligence Dashboard**  
 > Built on top of [WorldMonitor](https://github.com/koala73/worldmonitor) by koala73 — integrated, extended and customized.
