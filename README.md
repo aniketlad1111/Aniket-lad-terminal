@@ -6,7 +6,7 @@
 [![GitHub](https://img.shields.io/badge/GitHub-aniketlad1111-amber?logo=github)](https://github.com/aniketlad1111)
 [![WorldMonitor](https://img.shields.io/badge/Based%20On-WorldMonitor%20by%20koala73-purple?logo=github)](https://github.com/koala73/worldmonitor)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
-[![Live](https://img.shields.io/badge/Deploy-GitHub%20Pages-blue)](https://aniketlad1111.github.io/aniket-lad-terminal)
+[![Live](https://img.shields.io/badge/Deploy-GitHub%20Pages-blue)](https://aniketlad1111.github.io/Aniket-lad-terminal)
 
 ---
 
