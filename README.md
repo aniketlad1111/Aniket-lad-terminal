@@ -12,7 +12,7 @@
 
 ## 🌍 Live Demo
 
-**GitHub Pages:** https://aniketlad1111.github.io/aniket-lad-terminal
+**GitHub Pages:** https://aniketlad1111.github.io/Aniket-lad-terminal
 
 ---
 
